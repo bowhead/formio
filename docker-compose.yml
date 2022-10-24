@@ -18,11 +18,17 @@ services:
   mongo:
     image: mongo:4.1
     restart: always
+    ports:
+      - '27018:27017'
     volumes:
-      - mdb-data:/data/db
+      - ./mongo_entrypoint/001_user.js:/docker-entrypoint-initdb.d/001_user.js:ro
+      - ./mongodb/data/db/:/data/db/
+      - ./mongodb/data/log/:/var/log/mongodb/
+      - ./mongodb/mongod.conf:/etc/mongod.conf
     environment:
-      MONGO_INITDB_ROOT_USERNAME:
-      MONGO_INITDB_ROOT_PASSWORD:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: changeme
+      MONGO_INITDB_DATABASE: formio
 
   formio:
     build: ./
@@ -38,7 +44,7 @@ services:
       - ./:/app:rw
     environment:
       DEBUG: formio:*
-      NODE_CONFIG: '{"mongo": "mongodb://mongo:27017/formio"}'
+      NODE_CONFIG: '{"mongo": "mongodb://admin:changeme@mongo:27017/formio?authSource=admin"}'
       ROOT_EMAIL: admin@example.com
       ROOT_PASSWORD: CHANGEME
     stdin_open: true  # -i

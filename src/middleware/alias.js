@@ -24,7 +24,9 @@ module.exports = function(router) {
       'recaptcha',
       'action',
       'actionItem',
-      'tag'
+      'tag',
+      'purchase',
+      'challenge'
     ];
     /* eslint-enable max-len */
   }

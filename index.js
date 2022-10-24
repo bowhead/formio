@@ -11,6 +11,7 @@ const _ = require('lodash');
 const events = require('events');
 const Q = require('q');
 const nunjucks = require('nunjucks');
+const moment = require('moment');
 const util = require('./src/util/util');
 const log = require('debug')('formio:log');
 const gc = require('expose-gc/function');
@@ -81,6 +82,9 @@ module.exports = function(config) {
 
     // Get the encryption system.
     router.formio.encrypt = require('./src/util/encrypt');
+
+    // Get the crypto system.
+    router.formio.crypto = require('./src/util/crypto')(router.formio);
 
     // Load the updates and attach them to the router.
     router.formio.update = require('./src/db/index')(router.formio);
@@ -311,6 +315,34 @@ module.exports = function(config) {
               .values()
               .value()
             );
+          });
+        });
+
+        // Return hash for identity authentication
+        router.get('/challenge', async function(req, res, next) {
+          let ip;
+
+          if (req.ip.substring(0, 7) === '::ffff:') {
+            ip = req.ip.substring(7);
+          }
+          else {
+            ip = req.ip;
+          }
+
+          const hash = await router.formio.crypto.challengeHash(ip, req.query.address);
+
+          // eslint-disable-next-line new-cap
+          const newChallenge = new router.formio.mongoose.model('challenge')({
+            hash: hash,
+            address: req.query.address,
+            source: ip,
+            expiration: moment().add(1330, 's').toDate()
+          });
+
+          await newChallenge.save();
+
+          res.status(200).send({
+            'hash': hash
           });
         });
 

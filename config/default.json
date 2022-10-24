@@ -21,7 +21,9 @@
     "form",
     "access",
     "token",
-    "recaptcha"
+    "recaptcha",
+    "purchase",
+    "challenge"
   ],
   "jwt": {
     "secret": "--- change me now ---",

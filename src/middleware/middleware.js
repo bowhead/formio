@@ -42,6 +42,7 @@ module.exports = function(router) {
     formRevisionLoader: require('./formRevisionLoader')(router),
     submissionRevisionLoader: require('./submissionRevisionLoader')(router),
     addressHanlder: require('./addressHandler')(router),
-    validateHash: require('./validateHash')(router)
+    validateHash: require('./validateHash')(router),
+    validateReceipt: require('./validateReceipt')(router)
   };
 };

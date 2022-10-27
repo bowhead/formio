@@ -8,3 +8,7 @@ client*
 app*
 npm-debug.log
 mongodb
+local-*
+config/firebase
+
+!/src/util/apple.js

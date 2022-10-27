@@ -14,6 +14,11 @@ module.exports = function(router) {
         if (address) {
             req.body.address = address;
         }
+        else {
+            return res.status(422).send({
+                message: 'Invalid signed message'
+            });
+        }
 
         next();
     };

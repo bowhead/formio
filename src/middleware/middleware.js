@@ -43,6 +43,7 @@ module.exports = function(router) {
     submissionRevisionLoader: require('./submissionRevisionLoader')(router),
     addressHanlder: require('./addressHandler')(router),
     validateHash: require('./validateHash')(router),
-    validateReceipt: require('./validateReceipt')(router)
+    validateReceipt: require('./validateReceipt')(router),
+    validateTrialModule: require('./validateTrialModule')(router)
   };
 };

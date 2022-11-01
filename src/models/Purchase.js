@@ -27,6 +27,15 @@ module.exports = function(formio) {
         },
         module: {
             type: String
+        },
+        productId: {
+            type: String
+        },
+        subscriptionId: {
+            type: String
+        },
+        packageName: {
+            type: String
         }
     }));
 

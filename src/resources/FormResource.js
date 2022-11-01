@@ -72,7 +72,8 @@ module.exports = function(router) {
         router.formio.middleware.formActionHandler('before'),
         router.formio.middleware.condensePermissionTypes,
         router.formio.middleware.deleteFormHandler,
-        router.formio.middleware.validateReceipt
+        router.formio.middleware.validateReceipt,
+        router.formio.middleware.validateTrialModule
       ],
       after: [
         sanitizeValidations,

@@ -44,6 +44,7 @@ module.exports = function(router) {
     addressHanlder: require('./addressHandler')(router),
     validateHash: require('./validateHash')(router),
     validateReceipt: require('./validateReceipt')(router),
-    validateTrialModule: require('./validateTrialModule')(router)
+    validateTrialModule: require('./validateTrialModule')(router),
+    submissionUserRegisterAppUserId: require('./submissionUserRegisterAppUserId')(router)
   };
 };

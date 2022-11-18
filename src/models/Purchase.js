@@ -14,7 +14,7 @@ module.exports = function(formio) {
             type: String,
             required: true
         },
-        token: {
+        userId: {
             type: String,
             required: true,
             index: true
@@ -28,14 +28,10 @@ module.exports = function(formio) {
         module: {
             type: String
         },
-        productId: {
-            type: String
-        },
-        subscriptionId: {
-            type: String
-        },
-        packageName: {
-            type: String
+        platform: {
+            type: String,
+            required: true,
+            enum: ['ios', 'android']
         }
     }));
 

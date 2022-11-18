@@ -700,6 +700,75 @@ module.exports = function(router) {
 
       // Return if they have access.
       return _hasAccess;
+    },
+
+    /**
+     * Check if is buoyant user and if try to access to paths allowed
+     *
+     * @param req {Object}
+     *   The Express request Object.
+     * @param res {Object}
+     *   The Express request Object.
+     *
+     * @returns boolean
+     *   If the user has access to this method, with their given roles.
+     */
+    async isBuoyantUser(req, res) {
+      const method = req.method.toUpperCase();
+      const roles = req.user ? req.user.roles : [];
+      const url = req.url.split('?')[0];
+
+      const methods = {
+        'POST': ['/purchase'],
+        'GET': ['/form'],
+        'PUT': ['/purchase'],
+      };
+
+      const search = methods[method];
+      if (!search || typeof search === 'undefined') {
+        router.formio.util.error({
+          method: req.method,
+          _method: method
+        });
+      }
+
+      // Unsupported request method.
+      if (search === undefined) {
+        if (res) {
+          res.sendStatus(404);
+        }
+        return false;
+      }
+
+      const allowedPath = _.some(methods[method], function(path) {
+        if ((url === path) || (url === hook.alter('path', path, req))) {
+          return true;
+        }
+
+        return false;
+      });
+
+      if (!allowedPath) {
+        return false;
+      }
+
+      let buoyantUser = false;
+
+      for await (const role of roles) {
+        const roleInfo = await router.formio.mongoose.model('role').findOne({
+          '_id': role
+        }).exec();
+
+        if (roleInfo && roleInfo.title === 'Buoyant') {
+          buoyantUser = true;
+        }
+      }
+
+      if (buoyantUser) {
+        return true;
+      }
+
+      return false;
     }
     /* eslint-enable max-statements */
   };
@@ -726,7 +795,7 @@ module.exports = function(router) {
     // Check for whitelisted paths.
     let skip = false;
     if (req.method === 'GET') {
-      const whitelist = ['/health', '/current', '/logout', '/access', '/token', '/recaptcha'];
+      const whitelist = ['/health', '/current', '/logout', '/access', '/token', '/recaptcha', '/challenge'];
       const url = req.url.split('?')[0];
       skip = _.some(whitelist, function(path) {
         if ((url === path) || (url === hook.alter('path', path, req))) {
@@ -748,7 +817,7 @@ module.exports = function(router) {
     }
 
     // Determine if we are trying to access an entity of the form or submission.
-    router.formio.access.getAccess(req, res, function(err, access) {
+    router.formio.access.getAccess(req, res, async function(err, access) {
       if (err) {
         if (_.isNumber(err)) {
           return (typeof res.sendStatus === 'function') ? res.sendStatus(err) : next('Invalid Request');
@@ -783,6 +852,11 @@ module.exports = function(router) {
 
       // Check for access.
       if (router.formio.access.hasAccess(req, access, entity, res)) {
+        return next();
+      }
+
+      // Check if is buoyant user
+      if (await router.formio.access.isBuoyantUser(req, res)) {
         return next();
       }
 

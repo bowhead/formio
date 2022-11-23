@@ -17,7 +17,8 @@ module.exports = function(formio) {
         userId: {
             type: String,
             required: true,
-            index: true
+            index: true,
+            unique: true
         },
         type: {
             type: String,
@@ -27,11 +28,6 @@ module.exports = function(formio) {
         },
         module: {
             type: String
-        },
-        platform: {
-            type: String,
-            required: true,
-            enum: ['ios', 'android']
         }
     }));
 

@@ -716,12 +716,12 @@ module.exports = function(router) {
     async isBuoyantUser(req, res) {
       const method = req.method.toUpperCase();
       const roles = req.user ? req.user.roles : [];
-      const url = req.url.split('?')[0];
+      const url = req.url.split('?')[0].split('/')[1];
 
       const methods = {
-        'POST': ['/purchase'],
-        'GET': ['/form'],
-        'PUT': ['/purchase'],
+        'POST': ['purchase'],
+        'GET': ['form'],
+        'PUT': ['purchase'],
       };
 
       const search = methods[method];

@@ -1,17 +1,13 @@
 'use strict';
-const apple = require('../util/apple');
-const android = require('../util/google');
+const revenueCat = require('../util/revenuecat');
 
 module.exports = function(router) {
     return async function(req, res, next) {
-        const signData = {
-            hash: req.headers.hash,
-            sigR: req.headers.sigR,
-            sigS: req.headers.sigS,
-            sigV: req.headers.sigV
-        };
+        if (req.originalUrl === '/user/login?live=1' || req.isAdmin) {
+            return next();
+        }
 
-        const address = router.formio.crypto.getAddressFromSign(signData);
+        const address = req.user.data.address;
 
         if (!address) {
             return res.status(422).send({
@@ -19,7 +15,7 @@ module.exports = function(router) {
             });
         }
 
-        const purchase = await router.formio.mongoose.model('challenge').findOne({
+        const purchase = await router.formio.mongoose.model('purchase').findOne({
             address: address
         }).exec();
 
@@ -30,20 +26,21 @@ module.exports = function(router) {
         }
 
         try {
-            const iosVerification = apple.verify(purchase);
-            const androidVerification = android.verify(purchase);
+            const renevueCatVerification = await revenueCat().verify(purchase);
 
-            if (iosVerification.valid || androidVerification.valid) {
+            if (renevueCatVerification.valid) {
                 return next();
             }
             else {
-                return res.status().send({
+                console.log('expired');
+                return res.status(404).send({
                     message: 'Subscription expired'
                 });
             }
         }
         catch (error) {
-            return res.status().send({
+            console.error(error);
+            return res.status(404).send({
                 message: 'Subscription expired'
             });
         }

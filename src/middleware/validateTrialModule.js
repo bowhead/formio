@@ -1,16 +1,13 @@
 'use strict';
 
 module.exports = (router) => async (req, res, next) => {
+    if (req.originalUrl === '/user/login?live=1' || req.isAdmin) {
+        return next();
+    }
+
     let moduleName = '';
 
-    const signData = {
-        hash: req.headers.hash,
-        sigR: req.headers.sigr,
-        sigS: req.headers.sigs,
-        sigV: Number(req.headers.sigv)
-    };
-
-    const address = router.formio.crypto.getAddressFromSign(signData);
+    const address = req.user.data.address;
 
     const purchase = await router.formio.mongoose.model('purchase').findOne({
         address: address

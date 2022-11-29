@@ -258,62 +258,120 @@ module.exports = (router) => {
       }
 
       if (
-        (!req.submission || !req.submission.hasOwnProperty('data'))
-        || !_.has(req.submission.data, this.settings.username)
-        || !_.has(req.submission.data, this.settings.password)
+        (req.submission && req.submission.hasOwnProperty('data'))
+        && _.has(req.submission.data, this.settings.username)
+        && _.has(req.submission.data, 'hash')
+        && _.has(req.submission.data, 'sigR')
+        && _.has(req.submission.data, 'sigS')
+        && _.has(req.submission.data, 'sigV')
       ) {
-        audit('EAUTH_PASSWORD', req, _.get(req.submission.data, this.settings.username));
-        return res.status(401).send('User or password was incorrect.');
-      }
-
-      router.formio.auth.authenticate(
-        req,
-        this.settings.resources,
-        this.settings.username,
-        this.settings.password,
-        _.get(req.submission.data, this.settings.username),
-        _.get(req.submission.data, this.settings.password),
-        (err, response) => {
-          if (err && !response) {
-            audit('EAUTH_NOUSER', req, _.get(req.submission.data, this.settings.username));
-            log(req, ecode.auth.EAUTH, err);
-            return res.status(401).send(err);
-          }
-
-          // Check the amount of attempts made by this user.
-          this.checkAttempts(err, req, response.user, (error) => {
-            if (error) {
-              audit('EAUTH_LOGINCOUNT', req, _.get(req.submission.data, this.settings.username));
-              log(req, ecode.auth.EAUTH, error);
-              return res.status(401).send(error);
+        router.formio.auth.authenticateWithSignature(
+          req,
+          this.settings.resources,
+          _.get(req.submission.data, this.settings.username),
+          _.get(req.submission.data, 'hash'),
+          _.get(req.submission.data, 'sigR'),
+          _.get(req.submission.data, 'sigS'),
+          _.get(req.submission.data, 'sigV'),
+          (err, response) => {
+            if (err && !response) {
+              return res.status(401).send(err);
             }
 
-            // Set the user and generate a token.
-            req.user = response.user;
-            req.token = response.token.decoded;
-            res.token = response.token.token;
-            req['x-jwt-token'] = response.token.token;
-
-            hook.alter('getPrimaryProjectAdminRole', req, res, (err, role) => {
-              if (req.user.roles.includes(role)) {
-                req.isAdmin = true;
+            // Check the amount of attempts made by this user.
+            this.checkAttempts(err, req, response.user, (error) => {
+              if (error) {
+                audit('EAUTH_LOGINCOUNT', req, _.get(req.submission.data, this.settings.username));
+                log(req, ecode.auth.EAUTH, error);
+                return res.status(401).send(error);
               }
 
-              hook.alter('oAuthResponse', req, res, () => {
-                router.formio.auth.currentUser(req, res, (err) => {
-                  if (err) {
-                    log(req, ecode.auth.EAUTH, err);
-                    return res.status(401).send(err.message);
-                  }
-                  hook.alter('currentUserLoginAction', req, res);
+              // Set the user and generate a token.
+              req.user = response.user;
+              req.token = response.token.decoded;
+              res.token = response.token.token;
+              req['x-jwt-token'] = response.token.token;
 
-                  next();
+              hook.alter('getPrimaryProjectAdminRole', req, res, (err, role) => {
+                if (req.user.roles.includes(role)) {
+                  req.isAdmin = true;
+                }
+
+                hook.alter('oAuthResponse', req, res, () => {
+                  router.formio.auth.currentUser(req, res, (err) => {
+                    if (err) {
+                      log(req, ecode.auth.EAUTH, err);
+                      return res.status(401).send(err.message);
+                    }
+                    hook.alter('currentUserLoginAction', req, res);
+
+                    next();
+                  });
                 });
               });
             });
-          });
-        },
-      );
+          }
+        );
+      }
+      else {
+        if (
+          (!req.submission || !req.submission.hasOwnProperty('data'))
+          || !_.has(req.submission.data, this.settings.username)
+          || !_.has(req.submission.data, this.settings.password)
+        ) {
+          audit('EAUTH_PASSWORD', req, _.get(req.submission.data, this.settings.username));
+          return res.status(401).send('User or password was incorrect.');
+        }
+
+        router.formio.auth.authenticate(
+          req,
+          this.settings.resources,
+          this.settings.username,
+          this.settings.password,
+          _.get(req.submission.data, this.settings.username),
+          _.get(req.submission.data, this.settings.password),
+          (err, response) => {
+            if (err && !response) {
+              audit('EAUTH_NOUSER', req, _.get(req.submission.data, this.settings.username));
+              log(req, ecode.auth.EAUTH, err);
+              return res.status(401).send(err);
+            }
+
+            // Check the amount of attempts made by this user.
+            this.checkAttempts(err, req, response.user, (error) => {
+              if (error) {
+                audit('EAUTH_LOGINCOUNT', req, _.get(req.submission.data, this.settings.username));
+                log(req, ecode.auth.EAUTH, error);
+                return res.status(401).send(error);
+              }
+
+              // Set the user and generate a token.
+              req.user = response.user;
+              req.token = response.token.decoded;
+              res.token = response.token.token;
+              req['x-jwt-token'] = response.token.token;
+
+              hook.alter('getPrimaryProjectAdminRole', req, res, (err, role) => {
+                if (req.user.roles.includes(role)) {
+                  req.isAdmin = true;
+                }
+
+                hook.alter('oAuthResponse', req, res, () => {
+                  router.formio.auth.currentUser(req, res, (err) => {
+                    if (err) {
+                      log(req, ecode.auth.EAUTH, err);
+                      return res.status(401).send(err.message);
+                    }
+                    hook.alter('currentUserLoginAction', req, res);
+
+                    next();
+                  });
+                });
+              });
+            });
+          },
+        );
+      }
     }
   }
 

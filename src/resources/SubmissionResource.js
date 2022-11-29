@@ -18,6 +18,7 @@ module.exports = (router) => {
     router.formio.middleware.bootstrapSubmissionAccess,
     router.formio.middleware.addSubmissionResourceAccess,
     router.formio.middleware.condenseSubmissionPermissionTypes,
+    router.formio.middleware.submissionUserRegisterAppUserId,
     handlers.beforePost,
   ];
   handlers.afterPost = [

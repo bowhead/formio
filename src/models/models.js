@@ -15,6 +15,8 @@ module.exports = (router) => {
     schema: require('./Schema')(router.formio),
     submission: require('./Submission')(router.formio),
     token: require('./Token')(router.formio),
+    purchase: require('./Purchase')(router.formio),
+    challenge: require('./Challenge')(router.formio)
   });
 
   const defs = {

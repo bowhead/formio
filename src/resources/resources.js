@@ -5,6 +5,7 @@ module.exports = function(router) {
   return hook.alter('resources', {
     form: require('./FormResource')(router),
     submission: require('./SubmissionResource')(router),
-    role: require('./RoleResource')(router)
+    role: require('./RoleResource')(router),
+    purchase: require('./PurchaseResource')(router)
   });
 };

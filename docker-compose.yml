@@ -18,11 +18,17 @@ services:
   mongo:
     image: mongo:4.1
     restart: always
+    ports:
+      - '27018:27017'
     volumes:
-      - mdb-data:/data/db
+      - ./mongo_entrypoint/001_user.js:/docker-entrypoint-initdb.d/001_user.js:ro
+      - ./mongodb/data/db/:/data/db/
+      - ./mongodb/data/log/:/var/log/mongodb/
+      - ./mongodb/mongod.conf:/etc/mongod.conf
     environment:
-      MONGO_INITDB_ROOT_USERNAME:
-      MONGO_INITDB_ROOT_PASSWORD:
+      MONGO_INITDB_ROOT_USERNAME: ${FORMIO_DB_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${FORMIO_DB_PASSWORD:-changeme}
+      MONGO_INITDB_DATABASE: ${FORMIO_DB_NAME:-formio}
 
   formio:
     build: ./
@@ -38,9 +44,12 @@ services:
       - ./:/app:rw
     environment:
       DEBUG: formio:*
-      NODE_CONFIG: '{"mongo": "mongodb://mongo:27017/formio"}'
-      ROOT_EMAIL: admin@example.com
-      ROOT_PASSWORD: CHANGEME
+      NODE_CONFIG: "{\"mongo\":\"mongodb://${FORMIO_DB_USERNAME:-admin}:${FORMIO_DB_PASSWORD:-changeme}@mongo:27017/${FORMIO_DB_NAME:-formio}?authMechanism=SCRAM-SHA-1&authSource=admin\"}"
+      ROOT_EMAIL: ${FORMIO_ROOT_EMAIL:-admin@example.com}
+      ROOT_PASSWORD: ${FORMIO_ROOT_PASSWORD:-changeme}
+      FORMIO_DOMAIN: ${FORMIO_DEFAULT_PROJECT_URL}
+      FORMIO_JWT_SECRET: ${FORMIO_JWT_SECRET:---- change me now ---}
+      MULTI_TENANCY_ENABLED: ${MULTI_TENANCY_ENABLED:-false}
     stdin_open: true  # -i
     tty: true         # -t
 

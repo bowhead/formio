@@ -7,3 +7,9 @@ node_modules
 client*
 app*
 npm-debug.log
+mongodb
+local-*
+config/firebase
+.env
+
+!/src/util/apple.js

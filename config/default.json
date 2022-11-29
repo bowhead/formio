@@ -21,8 +21,11 @@
     "form",
     "access",
     "token",
-    "recaptcha"
+    "recaptcha",
+    "purchase",
+    "challenge"
   ],
+  "iosVerifyReceipt": "https://sandbox.itunes.apple.com/verifyReceipt",
   "jwt": {
     "secret": "--- change me now ---",
     "expireTime": 240

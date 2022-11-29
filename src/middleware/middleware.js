@@ -40,6 +40,11 @@ module.exports = function(router) {
     filterIndex: require('./filterIndex')(router),
     mongodbConnectionState: require('./mongodbConnectionState')(router),
     formRevisionLoader: require('./formRevisionLoader')(router),
-    submissionRevisionLoader: require('./submissionRevisionLoader')(router)
+    submissionRevisionLoader: require('./submissionRevisionLoader')(router),
+    addressHanlder: require('./addressHandler')(router),
+    validateHash: require('./validateHash')(router),
+    validateReceipt: require('./validateReceipt')(router),
+    validateTrialModule: require('./validateTrialModule')(router),
+    submissionUserRegisterAppUserId: require('./submissionUserRegisterAppUserId')(router)
   };
 };

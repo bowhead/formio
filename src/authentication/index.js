@@ -337,6 +337,156 @@ module.exports = (router) => {
   };
 
   /**
+   * Authenticate a user with signature.
+   *
+   * @param forms {Mixed}
+   *   A single form or an array of forms to authenticate against.
+   * @param username {String}
+   *   The user submission username to login with.
+   * @param hash {String}
+   *   Hash from challenge
+   * @param sigR {String}
+   *   R field from signture.
+   * @param sigS {String}
+   *   S field from signture.
+   * @param sigV {Number}
+   *   V field from signture.
+   * @param next {Function}
+   *   The callback function to call after authentication.
+   */
+  const authenticateWithSignature = async (req, forms, username, hash, sigR, sigS, sigV, next) => {
+    if (!username) {
+      audit('EAUTH_EMPTYUN', req);
+      return next('Missing username');
+    }
+    if (!hash) {
+      audit('EAUTH_EMPTYHASH', req);
+      return next('Missing hash');
+    }
+    if (!sigR) {
+      audit('EAUTH_EMPTYSR', req);
+      return next('Missing sigR');
+    }
+    if (!sigS) {
+      audit('EAUTH_EMPTYSS', req);
+      return next('Missing sigS');
+    }
+    if (!sigV) {
+      audit('EAUTH_EMPTYSV', req);
+      return next('Missing sigV');
+    }
+
+    const validHash = await router.formio.mongoose.model('challenge').findOne({
+      hash: hash,
+      expiration: {'$gte': (new  Date()),},
+    }).exec();
+
+    if (!validHash) {
+      audit('EAUTH_INVALIDHASH', req);
+      return next('Invalid Hash');
+    }
+
+    const signData = {
+      hash: hash,
+      sigR: sigR,
+      sigS: sigS,
+      sigV: Number(sigV)
+    };
+
+    const address = router.formio.crypto.getAddressFromSign(signData);
+
+    const query = {deleted: {$eq: null}};
+
+    // Determine the form id for querying.
+    if (_.isArray(forms)) {
+      query.form = {'$in': _.map(forms, util.idToBson)};
+    }
+    else if (_.isObject(forms)) {
+      query.form = util.idToBson(forms._id);
+    }
+    else if (_.isString(forms)) {
+      query.form = util.idToBson(forms);
+    }
+
+    // Look for the user.
+    query[`data.address`] = {$regex: new RegExp(`^${util.escapeRegExp(address)}$`), $options: 'i'};
+
+    // Find the user object.
+    const submissionModel = req.submissionModel || router.formio.resources.submission.model;
+
+    submissionModel.findOne(hook.alter('submissionQuery', query, req)).lean().exec((err, user) => {
+      if (err) {
+        return next(err);
+      }
+      if (!user) {
+        return next('Signature data was incorrect');
+      }
+
+      // Load the form associated with this user record.
+      router.formio.resources.form.model.findOne({
+        _id: user.form,
+        deleted: {$eq: null},
+      }).lean().exec((err, form) => {
+        if (err) {
+          audit('EAUTH_USERFORM', {
+            ...req,
+            userId: user._id,
+          }, user.form, err);
+          return next(err);
+        }
+
+        if (!form) {
+          audit('EAUTH_USERFORM', {
+            ...req,
+            userId: user._id,
+          }, user.form, {message: 'User form not found'});
+          return next('User form not found.');
+        }
+
+        // Allow anyone to hook and modify the user.
+        hook.alter('user', user, (err, _user) => {
+          if (err) {
+            // Attempt to fail safely and not update the user reference.
+            debug.authenticate(err);
+          }
+          else {
+            // Update the user with the hook results.
+            debug.authenticate(user);
+            user = _user;
+          }
+
+          hook.alter('login', user, req, (err) => {
+            if (err) {
+              return next(err);
+            }
+
+            // Allow anyone to hook and modify the token.
+            const token = hook.alter('token', {
+              user: {
+                _id: user._id,
+              },
+              form: {
+                _id: form._id,
+              },
+            }, form, req);
+
+            hook.alter('tokenDecode', token, req, (err, decoded) => {
+              // Continue with the token data.
+              next(err, {
+                user,
+                token: {
+                  token: getToken(token),
+                  decoded,
+                },
+              });
+            });
+          });
+        });
+      });
+    });
+  };
+
+  /**
    * Send the current user.
    *
    * @param req
@@ -388,6 +538,7 @@ module.exports = (router) => {
     isTokenAllowed,
     getTempToken,
     authenticate,
+    authenticateWithSignature,
     currentUser,
     tempToken,
     logout(req, res) {

@@ -3,11 +3,11 @@ const revenueCat = require('../util/revenuecat');
 
 module.exports = function(router) {
     return async function(req, res, next) {
-        if (req.originalUrl === '/user/login?live=1' || req.isAdmin) {
+        if (req.originalUrl === '/user/login?live=1' || req.isAdmin || req.anonymousList) {
             return next();
         }
 
-        const address = req.user.data.address;
+        const address = req.user? req.user.data.address : null;
 
         if (!address) {
             return res.status(422).send({

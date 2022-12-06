@@ -45,6 +45,8 @@ module.exports = function(router) {
     validateHash: require('./validateHash')(router),
     validateReceipt: require('./validateReceipt')(router),
     validateTrialModule: require('./validateTrialModule')(router),
-    submissionUserRegisterAppUserId: require('./submissionUserRegisterAppUserId')(router)
+    submissionUserRegisterAppUserId: require('./submissionUserRegisterAppUserId')(router),
+    anonymousList: require('./anonymousList')(router),
+    updatePurcharse: require('./updatePurcharse')(router),
   };
 };

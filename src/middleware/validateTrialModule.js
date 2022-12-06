@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = (router) => async (req, res, next) => {
-    if (req.originalUrl === '/user/login?live=1' || req.isAdmin) {
+    if (req.originalUrl === '/user/login?live=1' || req.isAdmin || req.anonymousList) {
         return next();
     }
 

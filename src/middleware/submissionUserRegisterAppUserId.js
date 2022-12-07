@@ -10,6 +10,10 @@ module.exports = function(router) {
             return next();
         }
 
+        if (!data.hash) {
+            return next();
+        }
+
         const newAppUserId = uuidv4();
 
         req.body.data.appUserId = newAppUserId;

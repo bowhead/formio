@@ -759,7 +759,7 @@ module.exports = function(router) {
           '_id': role
         }).exec();
 
-        if (roleInfo && roleInfo.title === 'Buoyant') {
+        if (roleInfo && roleInfo.title === 'Buoyant' || roleInfo.title === 'formsflow Client') {
           buoyantUser = true;
         }
       }

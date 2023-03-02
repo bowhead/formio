@@ -49,6 +49,15 @@ module.exports = function(router) {
       req.modelQuery = req.modelQuery || req.model || this.model;
       req.countQuery = req.countQuery.find(formQuery);
       req.modelQuery = req.modelQuery.find(formQuery);
+
+      const formFilters = req.query.select? req.query.select.split(','): [];
+
+      if (formFilters.length > 0) {
+        if (formFilters.includes('image') || formFilters.includes('color')) {
+          req.query.select = `${req.query.select},components`;
+          req.removeComponents = true;
+        }
+      }
     }
     next();
   };

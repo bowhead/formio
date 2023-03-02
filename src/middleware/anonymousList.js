@@ -18,6 +18,10 @@ module.exports = function(router) {
             if (!formFilters.includes('submissionAccess') && !formFilters.includes('components')
                 && !formFilters.includes('access') && !formFilters.includes('owner')) {
                     req.anonymousList = true;
+
+                    if (formFilters.includes('image') || formFilters.includes('color')) {
+                        req.query.select = `${req.query.select},components`;
+                    }
                 }
         }
 

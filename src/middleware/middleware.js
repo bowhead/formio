@@ -48,6 +48,7 @@ module.exports = function(router) {
     submissionUserRegisterAppUserId: require('./submissionUserRegisterAppUserId')(router),
     anonymousList: require('./anonymousList')(router),
     updatePurcharse: require('./updatePurcharse')(router),
-    lightestList: require('./lightestList')(router)
+    lightestList: require('./lightestList')(router),
+    buoyantPerson: require('./buoyantPerson')(router)
   };
 };

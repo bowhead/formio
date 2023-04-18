@@ -26,7 +26,8 @@ module.exports = function(router) {
       'actionItem',
       'tag',
       'purchase',
-      'challenge'
+      'challenge',
+      'buoyant-person'
     ];
     /* eslint-enable max-len */
   }

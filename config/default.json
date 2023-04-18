@@ -23,7 +23,8 @@
     "token",
     "recaptcha",
     "purchase",
-    "challenge"
+    "challenge",
+    "buoyant-person"
   ],
   "iosVerifyReceipt": "https://sandbox.itunes.apple.com/verifyReceipt",
   "jwt": {

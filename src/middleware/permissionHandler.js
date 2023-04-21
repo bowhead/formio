@@ -795,7 +795,8 @@ module.exports = function(router) {
     // Check for whitelisted paths.
     let skip = false;
     if (req.method === 'GET') {
-      const whitelist = ['/health', '/current', '/logout', '/access', '/token', '/recaptcha', '/challenge'];
+      const whitelist = ['/health', '/current', '/logout', '/access', '/token', '/recaptcha', '/challenge',
+        '/buoyant-person'];
       const url = req.url.split('?')[0];
       skip = _.some(whitelist, function(path) {
         if ((url === path) || (url === hook.alter('path', path, req))) {

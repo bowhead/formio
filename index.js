@@ -346,6 +346,36 @@ module.exports = function(config) {
           });
         });
 
+        router.get('/buoyant-person', async function(req, res, next) {
+          const buoyantForm = await router.formio.resources.form.model.findOne({
+            name: 'buoyantPerson'
+          }).exec();
+
+          const formId = buoyantForm._id;
+
+          const match = {};
+
+          match.form = formId;
+          match['data.question1'] = req.query.have_therapist_or_mental_health_professional_working;
+          match[`data.question2.${req.query.following_best_describes_your_primary_concern}`] = true;
+          match[`data.question3.${req.query.area_you_feel_need_most_improvement}`] = true;
+
+          const person = await router.formio.resources.submission.model.aggregate([{
+            '$match': match
+          }]).exec();
+
+          if (person.length > 0) {
+            res.status(200).send({
+              'kind': person[0].data.type
+            });
+          }
+          else {
+            res.status(404).send({
+              'message': 'Check your answers',
+            });
+          }
+        });
+
         // Import the form actions.
         router.formio.Action = router.formio.models.action;
         router.formio.actions = require('./src/actions/actions')(router);

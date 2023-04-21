@@ -366,7 +366,9 @@ module.exports = function(config) {
 
           if (person.length > 0) {
             res.status(200).send({
-              'kind': person[0].data.type
+              'kind': person[0].data.type,
+              'briefDescription': person[0].data.briefDescription,
+              'source': person[0].data.source
             });
           }
           else {

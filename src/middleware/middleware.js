@@ -49,6 +49,7 @@ module.exports = function(router) {
     anonymousList: require('./anonymousList')(router),
     updatePurcharse: require('./updatePurcharse')(router),
     lightestList: require('./lightestList')(router),
-    buoyantPerson: require('./buoyantPerson')(router)
+    buoyantPerson: require('./buoyantPerson')(router),
+    customSort: require('./customSort')(router)
   };
 };

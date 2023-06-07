@@ -85,7 +85,8 @@ module.exports = function(router) {
         router.formio.middleware.formActionHandler('after'),
         router.formio.middleware.filterResourcejsResponse(['deleted', '__v']),
         router.formio.middleware.filterIndex(['components', 'properties']),
-        router.formio.middleware.lightestList
+        router.formio.middleware.lightestList,
+        router.formio.middleware.customSort
       ],
       hooks: {
         put: {

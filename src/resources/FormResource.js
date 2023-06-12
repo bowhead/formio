@@ -73,8 +73,6 @@ module.exports = function(router) {
         router.formio.middleware.condensePermissionTypes,
         router.formio.middleware.deleteFormHandler,
         router.formio.middleware.anonymousList,
-        router.formio.middleware.validateReceipt,
-        router.formio.middleware.validateTrialModule,
         router.formio.middleware.buoyantPerson
       ],
       after: [
